@@ -6,6 +6,7 @@ interface EnvVars {
   STRIPE_SECRET: string;
   BASE_URL: string;
   STRIPE_ENDPOINT_SECRET: string;
+  NATS_SERVERS: string;
 }
 
 const envsSchema = joi
@@ -14,11 +15,14 @@ const envsSchema = joi
     STRIPE_SECRET: joi.string().required(),
     BASE_URL: joi.string().required(),
     STRIPE_ENDPOINT_SECRET: joi.string().required(),
+    NATS_SERVERS: joi.array().items(joi.string()).required(),
   })
   .unknown(true);
 
-const { error, value } = envsSchema.validate(process.env);
-
+const { error, value } = envsSchema.validate({
+  ...process.env,
+  NATS_SERVERS: process.env.NATS_SERVERS?.split(','),
+});
 if (error) throw new Error(`Config validation error: ${error.message}`);
 
 const envVars: EnvVars = value;
@@ -28,4 +32,5 @@ export const envs = {
   stripeSecret: envVars.STRIPE_SECRET,
   baseUrl: envVars.BASE_URL,
   stripeEndpointSecret: envVars.STRIPE_ENDPOINT_SECRET,
+  natsServers: envVars.NATS_SERVERS,
 };
